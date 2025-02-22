@@ -1,5 +1,5 @@
-# Specify Python version
-python_version == 3.11
+# Adding python version here blocks the pip install operation
+# python_version == 3.11
 
 # FastAPI framework
 fastapi==0.110.0
