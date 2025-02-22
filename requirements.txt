@@ -1,0 +1,23 @@
+# Specify Python version
+python_version == 3.11
+
+# FastAPI framework
+fastapi==0.110.0
+
+# ASGI server for FastAPI
+uvicorn[standard]==0.27.0
+
+# Web scraping dependencies
+selenium==4.18.1
+webdriver-manager==4.0.1  # Automatically handles ChromeDriver updates
+requests==2.31.0
+
+# Data handling and parsing (Optional but useful for scraping)
+beautifulsoup4==4.12.3
+lxml==5.1.0
+
+# Environment variables (Optional for better config management)
+python-dotenv==1.0.1
+
+# Optional logging and monitoring
+loguru==0.7.2
