@@ -28,6 +28,7 @@ class Address(Base):
     latitude = Column(Double)
     occupancy_type = Column(String(255))
     address_owner = Column(String(1024))
+    house_value = Column(Double)
 
     # Relationshipsf
     contractors = relationship("Contractor", back_populates="address")
