@@ -1,4 +1,4 @@
-from data_importers.parser import normalize_text, parse_date, parse_float, parse_int
+from data_importers.utils import normalize_text, parse_date, parse_float, parse_int, download_csv
 
 import csv
 import os
@@ -13,44 +13,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 # Import your models
 from database import Address, Contractor, ApprovedPermit, get_session, get_or_create_address
-
-
-
-IMPORT_URL = "https://data.boston.gov/dataset/cd1ec3ff-6ebf-4a65-af68-8329eceab740/resource/6ddcd912-32a0-43df-9908-63574f8c7e77/download/tmpfpuiefir.csv"
-
-def download_csv(save_path="data.csv"):
-    """Download a large CSV file from Boston's data portal and save it locally if it's older than 1 hour"""
-    url = IMPORT_URL
-
-    # Check if the file exists and is recent (less than 1 hour old)
-    if os.path.exists(save_path):
-        last_modified_time = os.path.getmtime(save_path)
-        current_time = time.time()
-
-        # Skip download if file was modified in the last 3600 seconds (1 hour)
-        if current_time - last_modified_time < 3600:
-            print("File is already downloaded and up-to-date (less than 1 hour old).")
-            return save_path
-
-    try:
-        with requests.get(url, stream=True) as response:
-            response.raise_for_status()  # Raise an error for bad status codes
-
-            # Open a file to write the downloaded content
-            with open(save_path, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=1024 * 1024):  # 1 MB chunks
-                    if chunk:  # Skip empty chunks
-                        f.write(chunk)
-        print("File downloaded successfully.")
-        return save_path  # Return the path to the saved file
-
-    except requests.RequestException as ex:
-        print(f"Error downloading CSV: {ex}")
-        return None
-
-    except requests.RequestException as ex:
-        print(f"Error downloading CSV: {ex}")
-        return None
 
 
 def import_csv_to_db(csv_file_path, db_session):
@@ -151,6 +113,8 @@ def import_csv_to_db(csv_file_path, db_session):
                 print(f"Error details: {str(e)}")
                 db_session.rollback()
 
+IMPORT_URL = "https://data.boston.gov/dataset/cd1ec3ff-6ebf-4a65-af68-8329eceab740/resource/6ddcd912-32a0-43df-9908-63574f8c7e77/download/tmpfpuiefir.csv"
+
 def update_permits_table_task():
     """Scheduled task to update the database and record the update timestamp."""
     print(f"Boston Permit Import Task started at {datetime.now()}")
@@ -158,7 +122,7 @@ def update_permits_table_task():
     try:
         with get_session() as session:
             # Step 1: Download the CSV
-            csv_file_path = download_csv()
+            csv_file_path = download_csv(IMPORT_URL, "permits.csv")
 
             if csv_file_path:
                 # Step 2: Import data into the database

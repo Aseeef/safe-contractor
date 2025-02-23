@@ -130,6 +130,7 @@ def get_or_create_address(session, street_number, street_name, city, state, zipc
     )
     session.add(new_address)
     session.flush()  # Assigns an ID without committing yet
+    session.commit()
 
     return new_address.id, True  # True -> Newly created
 
@@ -157,6 +158,9 @@ def add_or_update_contractor(session, license_id, name, address_id, company=None
     )
     session.add(new_contractor)
     session.flush()  # Assigns an ID without committing yet
+    session.commit()
+
+    print("adding", new_contractor.id)
 
     return new_contractor.id, True  # True -> Newly created
 
