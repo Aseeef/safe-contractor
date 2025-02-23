@@ -2,11 +2,10 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database import Contractor, Address, ApprovedPermit, Base
+from database import Contractor, Address, ApprovedPermit
 from dotenv import load_dotenv
 import database
 import os
-from database import Contractor, Address, ApprovedPermit
 import requests
 from bs4 import BeautifulSoup
 
