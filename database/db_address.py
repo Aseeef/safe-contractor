@@ -94,6 +94,34 @@ def init(engine_ref: Engine):
 def get_session():
     return session_creator()
 
+def get_or_create_address(session, street_number, street_name, city, state, zipcode, **kwargs):
+    # Step 1: Check if the address already exists
+    existing_address = session.query(Address).filter_by(
+        street_number=street_number,
+        street_name=street_name,
+        city=city,
+        state=state,
+        zipcode=zipcode
+    ).first()
+
+    if existing_address:
+        # If the address exists, return the existing ID
+        return existing_address.id, False  # False -> Not newly created
+
+    # Step 2: Create and flush a new address
+    new_address = Address(
+        street_number=street_number,
+        street_name=street_name,
+        city=city,
+        state=state,
+        zipcode=zipcode,
+        **kwargs
+    )
+    session.add(new_address)
+    session.flush()  # Assigns an ID without committing yet
+    return new_address.id, True  # True -> Newly created
+
+
 def initialize_or_get_state() -> State:
     """Ensure a single State record exists and return it."""
     with get_session() as session:

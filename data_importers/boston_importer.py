@@ -9,10 +9,11 @@ from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # Import your models
-from database import Address, Contractor, ApprovedPermit, get_session
-from parser import parse_date, parse_float, parse_int
+from database import Address, Contractor, ApprovedPermit, get_session, get_or_create_address
+from .parser import parse_date, parse_float, parse_int
 
 
 
@@ -54,6 +55,7 @@ def download_csv(save_path="data.csv"):
 
 
 def import_csv_to_db(csv_file_path, db_session):
+    print("Importing data from Boston Permits...")
     with open(csv_file_path, 'r', encoding='utf-8') as file:
         csv_reader = csv.DictReader(file)
 
@@ -63,11 +65,13 @@ def import_csv_to_db(csv_file_path, db_session):
                 normalized_city = normalize_text(row['city'])
                 normalized_state = normalize_text(row['state'])
                 normalized_zip = normalize_text(row['zip'])
+                normalized_occupancy = normalize_text(row['occupancytype'])
 
                 normalized_address = None if normalized_address == '' else normalized_address
                 normalized_city = None if normalized_city == '' else normalized_city
                 normalized_state = None if normalized_state == '' else normalized_state
                 normalized_zip = None if normalized_zip == '' else normalized_zip
+                normalized_occupancy = None if normalized_occupancy == '' else normalized_occupancy
 
                 if normalized_address is None:
                     street_number = None
@@ -78,19 +82,17 @@ def import_csv_to_db(csv_file_path, db_session):
                     street_name = " ".join(raw_address_parts[1:])
 
                 # First, create or get the address
-                address = Address(
+                address_id, created = get_or_create_address(
+                    session=db_session,
                     street_number=street_number,
                     street_name=street_name,
-                    city=normalize_text(row['city']),
-                    state=normalize_text(row['state']),
-                    zipcode=normalize_text(row['zip']),
-                    occupancy_type=normalize_text(row['occupancytype']),
+                    city=normalized_city,
+                    state=normalized_state,
+                    zipcode=normalized_zip,
+                    occupancy_type=normalized_occupancy,
                     latitude=parse_float(row['y_latitude']),
                     longitude=parse_float(row['x_longitude'])
                 )
-
-                db_session.add(address)
-                db_session.flush()  # This will assign an ID to the address
 
                 # normalize fields
                 permit_id = normalize_text(row['permitnumber'])
@@ -106,37 +108,53 @@ def import_csv_to_db(csv_file_path, db_session):
                 project_description = normalize_text(row['description'])
                 project_description = None if project_description == '' else project_description
 
+                try:
+                    # Attempt to insert the permit
+                    permit = ApprovedPermit(
+                        permit_id=permit_id,
+                        date_started=issue_date,
+                        project_address_id=address_id,
+                        project_amount=project_amount,
+                        project_status=project_status,
+                        owner_name=None,  # No owner name in CSV
+                        contractor_name=contractor_name,
+                        project_description=project_description,
+                        project_comments=row['comments']
+                    )
 
-                # Create the permit record
-                permit = ApprovedPermit(
-                    permit_id=permit_id,
-                    date_started=issue_date,
-                    project_address_id=address.id,
-                    project_amount=project_amount,
-                    project_status=project_status,
-                    owner_name=None,  # CSV doesn't have owner name
-                    contractor_name=contractor_name,
-                    project_description=project_description,
-                    project_comments=row['comments']
-                )
+                    db_session.add(permit)
+                    db_session.commit()
 
-                db_session.add(permit)
+                except IntegrityError:
+                    db_session.rollback()  # Roll back the failed insert
 
-                # Commit in batches (optional)
-                db_session.commit()
+                    # Permit already exists, update instead
+                    existing_permit = db_session.query(ApprovedPermit).filter_by(permit_id=permit_id).first()
+
+                    if existing_permit:
+                        # Update all fields except project_id and permit_id
+                        existing_permit.date_started = issue_date
+                        existing_permit.project_address_id = address_id
+                        existing_permit.project_amount = project_amount
+                        existing_permit.project_status = project_status
+                        existing_permit.contractor_name = contractor_name
+                        existing_permit.project_description = project_description
+                        existing_permit.project_comments = row['comments']
+
+                        db_session.commit()
 
             except IntegrityError as e:
-                print(f"Error processing row: {row['permitnumber']}")
+                print(f"Error processing row: {permit_id}")
                 print(f"Error details: {str(e)}")
                 db_session.rollback()
             except Exception as e:
-                print(f"Unexpected error processing row: {row['permitnumber']}")
+                print(f"Unexpected error processing row: {permit_id}")
                 print(f"Error details: {str(e)}")
                 db_session.rollback()
 
 def update_database_task():
     """Scheduled task to update the database and record the update timestamp."""
-    print(f"Task started at {datetime.now()}")
+    print(f"Boston Permit Import Task started at {datetime.now()}")
 
     try:
         with get_session() as session:
@@ -156,17 +174,7 @@ def update_database_task():
                 state.boston_permits_update_ts = datetime.utcnow()
                 session.commit()
 
-                print(f"Task completed successfully at {datetime.now()}")
+                print(f"Boston Permit Import Task completed successfully at {datetime.now()}")
 
     except Exception as e:
         print(f"Error during scheduled task: {e}")
-
-
-def start_scheduled_updates():
-    """Starts the scheduler with a 5-hour interval."""
-    scheduler.add_job(update_database_task, 'interval', hours=5)
-    scheduler.start()
-    print("Scheduler started! Task will run every 5 hours.")
-
-if __name__ == '__main__':
-    main()
