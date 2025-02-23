@@ -2,15 +2,35 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database import Contractor, Address, ApprovedPermit, Base
+from database import Contractor, Address, ApprovedPermit
+from dotenv import load_dotenv
+import database
+import os
+import requests
+from bs4 import BeautifulSoup
 
+# Load environment variables from .env
+load_dotenv()
+
+# Read database credentials from environment variables
+SQL_HOST = os.getenv("SQL_HOST")
+SQL_PORT = os.getenv("SQL_PORT", 3306)  # Default to 3306 if not specified
+SQL_USER = os.getenv("SQL_USER")
+SQL_PASSWORD = os.getenv("SQL_PASSWORD")
+SQL_DATABASE = os.getenv("SQL_DATABASE")
+
+# Construct the MariaDB connection URL
+DATABASE_URL = (
+    f"mysql+pymysql://{SQL_USER}:{SQL_PASSWORD}@{SQL_HOST}:{SQL_PORT}/{SQL_DATABASE}"
+)
+
+# Get FastAPI
 app = FastAPI()
-
-# Create the database engine
-engine = create_engine('sqlite:///database.db', echo=True)
+# Get DB Engine
+engine = create_engine(DATABASE_URL, echo=True)
 
 # Create all tables based on our models
-Base.metadata.create_all(engine)
+database.init(engine)
 
 # Create a session factory
 SessionLocal = sessionmaker(bind=engine)
