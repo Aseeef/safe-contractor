@@ -1,0 +1,98 @@
+/* ContractorProfile.css */
+
+.contractor-profile-container {
+    font-family: 'Arial, sans-serif';
+    max-width: 800px;
+    margin: 20px auto;
+    border: 1px solid #cce5ff; /* Light blue border */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    background-color: #f0f8ff; /* Light blue background */
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #a6d1ff; /* Slightly darker blue divider */
+    margin-bottom: 15px;
+}
+
+.header h1 {
+    color: #007bff; /* Primary blue color */
+    font-size: 24px;
+}
+
+.header .profile-icon {
+    color: #6c757d; /* Gray profile icon */
+}
+
+.info {
+    color: #495057; /* Dark gray text */
+    margin-bottom: 20px;
+}
+
+.info strong {
+    color: #28a745; /* Green for emphasis */
+}
+
+.past-projects {
+    margin-bottom: 20px;
+    overflow: scroll;
+}
+
+.past-projects h3 {
+    color: #17a2b8; /* Teal heading */
+    margin-bottom: 10px;
+}
+
+.projects-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #ffffff; /* White table background */
+    border: 1px solid #cce5ff; /* Light blue table border */
+    border-radius: 4px;
+    overflow: scroll; /* Hide overflow for rounded corners */
+}
+
+.projects-table th,
+.projects-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef; /* Lighter table row border */
+}
+
+.projects-table th {
+    background-color: #e9ecef; /* Light gray table header */
+    font-weight: 600;
+    color: #495057; /* Dark gray header text */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.reviews h3 {
+    color: #17a2b8; /* Teal heading */
+    margin-bottom: 10px;
+}
+
+.reviews ul {
+    list-style: none;
+    padding: 0;
+}
+
+.reviews li {
+    padding: 8px;
+    border-bottom: 1px solid #e9ecef; /* Lighter divider for reviews */
+}
+
+.reviews li:last-child {
+    border-bottom: none;
+}
+
+/* Style for the checkmark and square icons */
+.projects-table svg {
+    font-size: 1.2em;
+}

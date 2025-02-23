@@ -1,0 +1,144 @@
+/* Homepage.css */
+.main-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.15)), url('./seaport.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 20px;
+}
+
+.brand-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.logo-text-bold {
+  color: hsl(123, 89%, 40%);
+  font-family: 'Inter', sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.text-regular {
+  color: #FFF;
+  font-family: 'Inter', sans-serif;
+  font-size: 36px;
+  font-weight: 400;
+}
+
+.tagline {
+  font-family: 'Inter', sans-serif;
+  font-size: 36px;
+  font-weight: 900;
+  color: #FFF;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.search-container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.search-bar-container {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  padding: 5px 10px;
+  gap: 10px;
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  padding: 10px;
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  flex: 1;
+  min-width: 0;
+}
+
+.divider {
+  height: 30px;
+  width: 1px;
+  background-color: #ccc;
+}
+
+.search-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 40px;
+  background-color: #088B0E;
+  color: #fff;
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .brand-container {
+    position: relative;
+    top: 0;
+    left: 0;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .tagline {
+    font-size: 24px;
+    padding: 0 20px;
+  }
+
+  .search-bar-container {
+    flex-direction: column;
+    border-radius: 20px;
+    padding: 15px;
+  }
+
+  .search-input {
+    width: 100%;
+    border-bottom: 1px solid #ccc;
+    padding: 15px 0;
+  }
+
+  .search-input:last-of-type {
+    border-bottom: none;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .search-button {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .logo-text-bold,
+  .text-regular {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tagline {
+    font-size: 20px;
+  }
+
+  .search-input {
+    font-size: 14px;
+  }
+}
