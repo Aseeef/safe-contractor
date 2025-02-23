@@ -1,6 +1,7 @@
 from rapidfuzz import fuzz
 from database import get_session, Contractor, ApprovedPermit, Address
 from fastapi import APIRouter, HTTPException
+from sqlalchemy import and_
 import os
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
