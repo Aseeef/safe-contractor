@@ -1,6 +1,9 @@
 from dateutil.parser import parse
 
 import re
+import os
+import requests
+import time
 
 def parse_float(value):
     """Convert string to float, handling currency symbols, empty strings, and invalid values."""
@@ -62,3 +65,36 @@ def parse_date(date_str):
 def normalize_text(text):
     """Normalize text by stripping whitespace and converting to lowercase."""
     return text.strip().lower() if text else None
+
+def download_csv(url, save_path):
+    """Download a large CSV file from Boston's data portal and save it locally if it's older than 1 hour"""
+
+    # Check if the file exists and is recent (less than 1 hour old)
+    if os.path.exists(save_path):
+        last_modified_time = os.path.getmtime(save_path)
+        current_time = time.time()
+
+        # Skip download if file was modified in the last 3600 seconds (1 hour)
+        if current_time - last_modified_time < 3600:
+            print("File is already downloaded and up-to-date (less than 1 hour old).")
+            return save_path
+
+    try:
+        with requests.get(url, stream=True) as response:
+            response.raise_for_status()  # Raise an error for bad status codes
+
+            # Open a file to write the downloaded content
+            with open(save_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=1024 * 1024):  # 1 MB chunks
+                    if chunk:  # Skip empty chunks
+                        f.write(chunk)
+        print("File downloaded successfully.")
+        return save_path  # Return the path to the saved file
+
+    except requests.RequestException as ex:
+        print(f"Error downloading CSV: {ex}")
+        return None
+
+    except requests.RequestException as ex:
+        print(f"Error downloading CSV: {ex}")
+        return None
