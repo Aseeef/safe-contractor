@@ -28,7 +28,7 @@ client = OpenAI()
         "Otherwise, a simple case-insensitive search is performed. Only the first 10 results are returned."
     ),
 )
-async def search_contractor(contractor_name: Optional[str] = None, fuzz_ratio: Optional[int] = 0.75) -> List[FuzzyContractor]:
+async def search_contractor(contractor_name: Optional[str] = None, fuzz_ratio: Optional[int] = 75) -> List[FuzzyContractor]:
     """
     Search for a contractor's name using fuzzy search.
     - If 'contractor_name' is provided and its length > 4, uses fuzzy_search_contractors.
