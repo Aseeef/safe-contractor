@@ -1,6 +1,6 @@
-// ReliableContractorProfile.js
+// Update ReliableContractorProfile.js
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import './ContractorProfile.css';
@@ -9,7 +9,7 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric'  
   });
 };
 
@@ -22,6 +22,7 @@ const formatMoney = (amount) => {
 
 const ReliableContractorProfile = () => {
   const { contractorName } = useParams();
+  const navigate = useNavigate(); // Add navigation hook
   const [contractorData, setContractorData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,9 +31,9 @@ const ReliableContractorProfile = () => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-  
+
       try {
-        // First try to get data from localStorage
+        // First try to get data from localStorage 
         const storedData = localStorage.getItem('contractorData');
         if (storedData) {
           setContractorData(JSON.parse(storedData));
@@ -40,15 +41,15 @@ const ReliableContractorProfile = () => {
           setLoading(false);
           return;
         }
-  
+
         // If no stored data, fetch from API
         const apiUrl = `http://localhost:8003/api/detailed-contractor?contractor_name=${encodeURIComponent(contractorName)}`;
         const response = await fetch(apiUrl);
-  
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-  
+
         const data = await response.json();
         setContractorData(data);
       } catch (err) {
@@ -58,7 +59,7 @@ const ReliableContractorProfile = () => {
         setLoading(false);
       }
     };
-  
+
     if (contractorName) {
       fetchData();
     }
@@ -68,11 +69,17 @@ const ReliableContractorProfile = () => {
   if (error) return <div className="contractor-profile-container">Error: {error}</div>;
   if (!contractorData) return <div className="contractor-profile-container">Contractor not found.</div>;
 
-  // Check if previous_works exists and has elements
   const latestWork = contractorData.previous_works?.length > 0 ? contractorData.previous_works[0] : null;
 
   return (
     <div className="contractor-profile-container">
+      <button 
+        onClick={() => navigate('/')}
+        className="back-button"
+      >
+        ← Back to Search
+      </button>
+
       <div className="header">
         <h1>{contractorName}</h1>
         <FontAwesomeIcon icon={faUserCircle} size="3x" className="profile-icon" />

@@ -203,3 +203,24 @@
   color: #088B0E;
   background-color: rgba(8, 139, 14, 0.05);
 }
+
+.back-button {
+  background: none;
+  border: none;
+  color: #088B0E;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  margin-bottom: 20px;
+}
+
+.back-button:hover {
+  background-color: rgba(8, 139, 14, 0.05);
+}
