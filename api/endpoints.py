@@ -5,6 +5,7 @@ import os
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import exists
 from pydantic import BaseModel
 import database
 from openai import OpenAI
@@ -12,7 +13,6 @@ from typing import List, Optional
 
 class FuzzyContractor(BaseModel):
     name: str
-    company: Optional[str] = None
     score: int
 
 router = APIRouter()
@@ -43,8 +43,7 @@ async def search_contractor(contractor_name: Optional[str] = None, fuzz_ratio: O
         limited_results = results[:10]
         return [
             {
-                "name": contractor.name,
-                "company": contractor.company,
+                "name": contractor,
                 "score": score
             }
             for contractor, score in limited_results
@@ -58,8 +57,7 @@ async def search_contractor(contractor_name: Optional[str] = None, fuzz_ratio: O
             return [
                 {
                     "name": contractor.name,
-                    "license_id": contractor.license_id,
-                    "company": contractor.company
+                    "score": 0
                 }
                 for contractor in contractors
             ]
