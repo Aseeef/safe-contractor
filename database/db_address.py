@@ -53,13 +53,15 @@ class ApprovedPermit(Base):
     __tablename__ = 'approved_permits'
 
     project_id = Column(Integer, primary_key=True)
-    permit_id = Column(String)
+    date_started = Column(String)
+    permit_id = Column(String, unique=True)
     project_address_id = Column(Integer, ForeignKey('addresses.id'))
     project_amount = Column(Double)
     project_status = Column(String)  # Will store 'cancelled', 'ongoing', or 'completed'
     owner_name = Column(String)
     contractor_name = Column(String)
     project_description = Column(String)
+    project_comments = Column(String)
 
     # Relationship
     project_address = relationship("Address", back_populates="permits")
