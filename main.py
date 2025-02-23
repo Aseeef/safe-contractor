@@ -6,10 +6,25 @@ from database import Contractor, Address, ApprovedPermit, Base
 import requests
 from bs4 import BeautifulSoup
 
-app = FastAPI()
+# Load environment variables from .env
+load_dotenv()
 
-# Create the database engine - this will create a new SQLite database file
-engine = create_engine('sqlite:///database.db', echo=True)  # echo=True shows SQL commands
+# Read database credentials from environment variables
+SQL_HOST = os.getenv("SQL_HOST")
+SQL_PORT = os.getenv("SQL_PORT", 3306)  # Default to 3306 if not specified
+SQL_USER = os.getenv("SQL_USER")
+SQL_PASSWORD = os.getenv("SQL_PASSWORD")
+SQL_DATABASE = os.getenv("SQL_DATABASE")
+
+# Construct the MariaDB connection URL
+DATABASE_URL = (
+    f"mysql+pymysql://{SQL_USER}:{SQL_PASSWORD}@{SQL_HOST}:{SQL_PORT}/{SQL_DATABASE}"
+)
+
+# Get FastAPI
+app = FastAPI()
+# Get DB Engine
+engine = create_engine(DATABASE_URL, echo=True)
 
 # Create all tables based on our models
 Base.metadata.create_all(engine)
