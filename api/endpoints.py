@@ -1,5 +1,5 @@
 from rapidfuzz import fuzz
-from database import get_session, Contractor, ApprovedPermit
+from database import get_session, Contractor, ApprovedPermit, Address
 from fastapi import APIRouter, HTTPException
 import os
 from sqlalchemy.orm import Session
@@ -8,8 +8,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import exists
 from pydantic import BaseModel
 import database
+import json
+from sqlalchemy.orm import class_mapper
 from openai import OpenAI
 from typing import List, Optional
+from sqlalchemy import func
 
 class FuzzyContractor(BaseModel):
     name: str
@@ -82,33 +85,74 @@ async def detailed_contractor(contractor_name: str = None, license_id: str = Non
             raise HTTPException(status_code=404, detail="Contractor not found")
 
         # Retrieve previous works from ApprovedPermit table
-        previous_works = session.query(ApprovedPermit)\
-                                    .join(ApprovedPermit.project_address)\
-                                    .filter(ApprovedPermit.contractor_name == contractor.name)\
-                                    .all()
+        previous_works = (
+            session.query(ApprovedPermit)
+            .join(Address, ApprovedPermit.project_address_id == Address.id)
+            .filter(ApprovedPermit.contractor_name == contractor.name)
+            .all()
+        )
 
+        total_amount = get_total_project_amount_for_contractor(contractor_name)
         # TODO: include gpt response
+
+        contractor_info = f"'previous_works': {serialize_query_result(previous_works)},\n 'total_amount': {total_amount}"
+        gpt_result = gpt_search("{" + contractor_info + "}")
 
         # Prepare the response
         response = {
             "previous_works": previous_works,
-            "gpt": "test"
+            "total_amount": total_amount,
+            "gpt": gpt_result
         }
 
     return response
 
-def fuzzy_search_contractors(search_query, threshold=75):
+def model_to_dict(model_instance):
+    """Convert a SQLAlchemy model instance into a dictionary."""
+    return {
+        column.key: getattr(model_instance, column.key)
+        for column in class_mapper(model_instance.__class__).columns
+    }
+
+def serialize_query_result(query_result):
+    """Convert a list of model instances into a JSON string."""
+    data = [model_to_dict(row) for row in query_result]
+    return json.dumps(data, default=str)  # default=str handles datetime and other non-serializable objects
+
+
+def get_total_project_amount_for_contractor(contractor_name: str):
     with get_session() as session:
-        # Use a preliminary filter: names containing the query and with an approved permit record.
+        total_amount = session.query(
+            func.sum(ApprovedPermit.project_amount)
+        ).filter(
+            ApprovedPermit.contractor_name == contractor_name
+        ).scalar()
+    return total_amount
+
+def fuzzy_search_contractors(search_query, threshold=75):
+    search_query = search_query.lower()
+    with get_session() as session:
+        # Build an exists clause that ensures a matching, non-null contractor_name in ApprovedPermit.
+        exists_clause = exists().where(
+            and_(
+                ApprovedPermit.contractor_name == Contractor.name,
+                ApprovedPermit.contractor_name != None
+            )
+        )
+
+        # Preliminary filter: Contractor name must not be null and contain the query,
+        # and there must exist a corresponding ApprovedPermit record.
         candidates = session.query(Contractor).filter(
+            Contractor.name != None,
             Contractor.name.ilike(f"%{search_query}%"),
-            exists().where(ApprovedPermit.contractor_name == Contractor.name)
+            exists_clause
         ).limit(50).all()
 
-        # If no candidates are found, fallback to all contractors that have an approved permit.
+        # Fallback to all contractors that have an approved permit if no candidates found.
         if not candidates:
             candidates = session.query(Contractor).filter(
-                exists().where(ApprovedPermit.contractor_name == Contractor.name)
+                Contractor.name != None,
+                exists_clause
             ).limit(50).all()
 
         # Compute fuzzy match scores and filter by threshold.
@@ -155,4 +199,5 @@ def gpt_search(query):
         frequency_penalty=0,
         presence_penalty=0
     )
-    return response.data.choices[0].message.content[0].text
+
+    return response.choices[0].message.content
