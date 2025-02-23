@@ -53,3 +53,5 @@ itsdangerous~=2.2.0
 pyyaml~=6.0.2
 httpx~=0.28.1
 sqlalchemy~=2.0.36
+pymysql~=1.1.1
+apscheduler~=3.11.0
