@@ -9,7 +9,8 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Homepage />} />
-        <Route path="/contractor/" element={<ReliableContractorProfile />} />
+        // Fix in App.js
+        <Route path="/contractor/:contractorName" element={<ReliableContractorProfile />} />
       </Routes>
     </Router>
   );

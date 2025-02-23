@@ -1,6 +1,7 @@
 // HomePage.js
 import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './HomePage.css';
 import { debounce } from 'lodash'; // Ensure you have lodash installed: npm install lodash
 
@@ -13,11 +14,29 @@ function Homepage() {
     const handleNameChange = (event) => {
         setContractorName(event.target.value);
     };
-
+    const navigate = useNavigate();
     const handleLicenseIdChange = (event) => {
         setLicenseId(event.target.value);
     };
-
+    const handleContractorSelect = async (contractor) => {
+        try {
+            const apiUrl = `http://localhost:8003/api/detailed-contractor?contractor_name=${encodeURIComponent(contractor.name)}`;
+            const response = await fetch(apiUrl);
+    
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+    
+            const data = await response.json();
+            // Store data temporarily for profile page
+            localStorage.setItem('contractorData', JSON.stringify(data));
+            // Navigate to contractor profile
+            navigate(`/contractor/${encodeURIComponent(contractor.name)}`);
+        } catch (err) {
+            console.error("Error fetching contractor details:", err);
+            setError(`Failed to load contractor details: ${err.message}`);
+        }
+    };
     const fetchContractors = useCallback(
         debounce(async () => {
             if (!contractorName && !licenseId) {
@@ -29,7 +48,7 @@ function Homepage() {
             if (contractorName) {
                 apiUrl += `contractor_name=${contractorName}`;
             }
-            apiUrl += '&fuzz_ratio=75';
+            
 
             try {
                 const response = await fetch(apiUrl);
@@ -96,17 +115,22 @@ function Homepage() {
             {error && <p className="error">{error}</p>}
 
             {contractorList.length > 0 && (
-                <div className="contractor-list">
-                    <h3>Contractors:</h3>
-                    <ul>
-                        {contractorList.map((contractor) => (
-                            <li key={contractor.name}>
-                                <Link to={`/contractor/${encodeURIComponent(contractor.name)}`}>{contractor.name}</Link>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+        <div className="contractor-list">
+            <h3>Available Contractors</h3>
+            <ul>
+                {contractorList.map((contractor) => (
+                    <li key={contractor.name}>
+                        <button 
+                            onClick={() => handleContractorSelect(contractor)}
+                            className="contractor-link"
+                        >
+                            {contractor.name}
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    )}
         </div>
     );
 }

@@ -1,13 +1,25 @@
-/* ContractorProfile.css */
-
+/* Update ContractorProfile.css */
 .contractor-profile-container {
-    font-family: 'Arial, sans-serif';
-    max-width: 800px;
+    font-family: 'Inter', sans-serif;
+    max-width: 1000px;
     margin: 20px auto;
-    border: 1px solid #cce5ff; /* Light blue border */
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    background-color: #f0f8ff; /* Light blue background */
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    position: relative;
+    z-index: 1;
+}
+
+body {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.15)), url('./seaport.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+    margin: 0;
     padding: 20px;
 }
 
@@ -15,84 +27,113 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #a6d1ff; /* Slightly darker blue divider */
-    margin-bottom: 15px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(8, 139, 14, 0.2);
+    margin-bottom: 25px;
 }
 
 .header h1 {
-    color: #007bff; /* Primary blue color */
-    font-size: 24px;
+    color: #088B0E;
+    font-size: 28px;
+    font-weight: 600;
 }
 
 .header .profile-icon {
-    color: #6c757d; /* Gray profile icon */
+    color: #088B0E;
+    opacity: 0.8;
 }
 
 .info {
-    color: #495057; /* Dark gray text */
-    margin-bottom: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 25px;
 }
 
 .info strong {
-    color: #28a745; /* Green for emphasis */
+    color: #088B0E;
+    font-weight: 500;
 }
 
-.past-projects {
-    margin-bottom: 20px;
-    overflow: scroll;
-}
-
-.past-projects h3 {
-    color: #17a2b8; /* Teal heading */
-    margin-bottom: 10px;
+h3 {
+    color: #088B0E;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 30px 0 15px;
 }
 
 .projects-table {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    background-color: #ffffff; /* White table background */
-    border: 1px solid #cce5ff; /* Light blue table border */
-    border-radius: 4px;
-    overflow: scroll; /* Hide overflow for rounded corners */
-}
-
-.projects-table th,
-.projects-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #e9ecef; /* Lighter table row border */
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .projects-table th {
-    background-color: #e9ecef; /* Light gray table header */
-    font-weight: 600;
-    color: #495057; /* Dark gray header text */
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    background-color: rgba(8, 139, 14, 0.1);
+    color: #088B0E;
+    font-weight: 500;
+    padding: 15px;
+    text-align: left;
 }
 
-.reviews h3 {
-    color: #17a2b8; /* Teal heading */
-    margin-bottom: 10px;
+.projects-table td {
+    padding: 15px;
+    border-bottom: 1px solid rgba(8, 139, 14, 0.1);
 }
 
-.reviews ul {
-    list-style: none;
-    padding: 0;
-}
-
-.reviews li {
-    padding: 8px;
-    border-bottom: 1px solid #e9ecef; /* Lighter divider for reviews */
-}
-
-.reviews li:last-child {
+.projects-table tr:last-child td {
     border-bottom: none;
 }
 
-/* Style for the checkmark and square icons */
-.projects-table svg {
-    font-size: 1.2em;
+details {
+    cursor: pointer;
+}
+
+details summary {
+    color: #088B0E;
+    font-weight: 500;
+    padding: 5px 0;
+}
+
+details summary:hover {
+    color: #066B0B;
+}
+
+details p {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #495057;
+    padding: 10px;
+    background: rgba(8, 139, 14, 0.05);
+    border-radius: 4px;
+}
+
+.gpt-analysis {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    border-left: 4px solid #088B0E;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.gpt-analysis h3 {
+    color: #088B0E;
+    margin-top: 0;
+}
+
+@media (max-width: 768px) {
+    .contractor-profile-container {
+        margin: 10px;
+        padding: 15px;
+    }
+    
+    .projects-table {
+        font-size: 14px;
+    }
 }
