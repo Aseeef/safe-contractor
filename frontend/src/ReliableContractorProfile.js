@@ -26,7 +26,7 @@ const ReliableContractorProfile = () => {
           return;
         }
 
-        const apiUrl = `/search-contractor?contractor_name=${contractorName}`;
+        const apiUrl = `/api/detailed-contractor?contractor_name=${contractorName}`;
         const response = await fetch(apiUrl);
 
         if (!response.ok) {

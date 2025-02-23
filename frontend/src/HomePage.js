@@ -25,24 +25,32 @@ function Homepage() {
                 return;
             }
 
-            let apiUrl = '/search-contractor?';
+            let apiUrl = 'http://localhost:8003/api/fuzzy-contractor?';
             if (contractorName) {
                 apiUrl += `contractor_name=${contractorName}`;
-            } else if (licenseId) {
-                apiUrl += `license_id=${licenseId}`;
             }
+            apiUrl += '&fuzz_ratio=75';
 
             try {
                 const response = await fetch(apiUrl);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    // If the response is not ok, try to parse the JSON
+                    let errorMessage = `HTTP error! Status: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.detail || errorMessage; // Use detail if available
+                    } catch (jsonError) {
+                        console.error("Failed to parse error JSON:", jsonError);
+                        // Keep original errorMessage if parsing fails
+                    }
+                    throw new Error(errorMessage);
                 }
                 const data = await response.json();
                 setContractorList(Array.isArray(data) ? data : [data]); // Handle both single object and array responses
                 setError(null);
             } catch (err) {
                 console.error("Error fetching contractors:", err);
-                setError("Failed to fetch contractors. Please try again.");
+                setError(`Failed to fetch contractors. Please try again. ${err.message}`);
                 setContractorList([]);
             }
         }, 300), // 300ms debounce delay
@@ -92,7 +100,7 @@ function Homepage() {
                     <h3>Contractors:</h3>
                     <ul>
                         {contractorList.map((contractor) => (
-                            <li key={contractor.license_id}>
+                            <li key={contractor.name}>
                                 <Link to={`/contractor/${encodeURIComponent(contractor.name)}`}>{contractor.name}</Link>
                             </li>
                         ))}
