@@ -6,7 +6,7 @@ import database
 
 from data_importers.utils import normalize_text, parse_date
 from datetime import datetime
-from database import get_or_create_address, add_or_update_contractor, get_session
+from database import add_or_update_address, add_or_update_contractor, get_session
 
 # Initial setup
 url = "https://services.oca.state.ma.us/hic/licenseelist.aspx"
@@ -142,7 +142,9 @@ def update_contractor_table_task():
                         license_id=registration_no,
                         name=contractor_name,
                         address_id=None,
-                        company=company
+                        company=company,
+                        license_status=status,
+                        expire_date=expire_date
                     )
             session.commit()
             # Adjust page_number if needed. The current logic forces page_number to 16 if less.

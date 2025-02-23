@@ -57,6 +57,8 @@ class Contractor(Base):
     company = Column(String(1024))
     name = Column(String(1024), nullable=False)
     address_id = Column(Integer, ForeignKey('addresses.id'))
+    license_status = Column(String(1024))
+    expire_date = Column(DateTime)
 
     # Relationship
     address = relationship("Address", back_populates="contractors")
@@ -105,7 +107,7 @@ def init(engine_ref: Engine):
 def get_session():
     return session_creator()
 
-def get_or_create_address(session, street_number, street_name, city, state, zipcode, **kwargs):
+def add_or_update_address(session, street_number, street_name, city, state, zipcode, **kwargs):
     # Step 1: Check if the address already exists
     existing_address = session.query(Address).filter_by(
         street_number=street_number,
@@ -134,7 +136,7 @@ def get_or_create_address(session, street_number, street_name, city, state, zipc
 
     return new_address.id, True  # True -> Newly created
 
-def add_or_update_contractor(session, license_id, name, address_id, company=None):
+def add_or_update_contractor(session, license_id, name, address_id, company=None, license_status=None, expire_date=None):
     if license_id is None or name is None:
         return None
 
@@ -146,6 +148,8 @@ def add_or_update_contractor(session, license_id, name, address_id, company=None
         existing_contractor.name = name
         existing_contractor.address_id = address_id
         existing_contractor.company = company
+        existing_contractor.license_status = license_status
+        existing_contractor.expire_date = expire_date
         session.commit()
         return existing_contractor.id, False  # False -> Not newly created
 
@@ -154,7 +158,9 @@ def add_or_update_contractor(session, license_id, name, address_id, company=None
         license_id=license_id,
         name=name,
         address_id=address_id,
-        company=company
+        company=company,
+        license_status=license_status,
+        expire_date=expire_date
     )
     session.add(new_contractor)
     session.flush()  # Assigns an ID without committing yet

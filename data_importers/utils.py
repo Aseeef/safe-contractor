@@ -2,6 +2,8 @@ from dateutil.parser import parse
 
 import re
 import os
+import requests
+import time
 
 def parse_float(value):
     """Convert string to float, handling currency symbols, empty strings, and invalid values."""
