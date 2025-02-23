@@ -2,6 +2,7 @@ from rapidfuzz import fuzz
 from database import get_session, Contractor, ApprovedPermit, Address
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import and_
+from sqlalchemy import distinct
 import os
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
@@ -133,39 +134,34 @@ def get_total_project_amount_for_contractor(contractor_name: str):
 def fuzzy_search_contractors(search_query, threshold=75):
     search_query = search_query.lower()
     with get_session() as session:
-        # Build an exists clause that ensures a matching, non-null contractor_name in ApprovedPermit.
-        exists_clause = exists().where(
-            and_(
-                ApprovedPermit.contractor_name == Contractor.name,
-                ApprovedPermit.contractor_name != None
-            )
-        )
-
-        # Preliminary filter: Contractor name must not be null and contain the query,
-        # and there must exist a corresponding ApprovedPermit record.
-        candidates = session.query(Contractor).filter(
-            Contractor.name != None,
-            Contractor.name.ilike(f"%{search_query}%"),
-            exists_clause
+        # Step 1: Fetch distinct contractor names from ApprovedPermit
+        candidates = session.query(
+            distinct(ApprovedPermit.contractor_name)
+        ).filter(
+            ApprovedPermit.contractor_name.ilike(f"%{search_query}%"),
+            ApprovedPermit.contractor_name != None
         ).limit(50).all()
 
-        # Fallback to all contractors that have an approved permit if no candidates found.
+        # Step 2: If no candidates found, fallback to all distinct contractor names
         if not candidates:
-            candidates = session.query(Contractor).filter(
-                Contractor.name != None,
-                exists_clause
+            candidates = session.query(
+                distinct(ApprovedPermit.contractor_name)
+            ).filter(
+                ApprovedPermit.contractor_name != None
             ).limit(50).all()
 
-        # Compute fuzzy match scores and filter by threshold.
+        # Step 3: Compute fuzzy match scores and filter by threshold
         results = []
-        for contractor in candidates:
-            score = fuzz.ratio(contractor.name.lower(), search_query.lower())
+        for (contractor_name,) in candidates:
+            score = fuzz.ratio(contractor_name.lower(), search_query)
             if score >= threshold:
-                results.append((contractor, score))
+                results.append((contractor_name, score))
 
-        # Sort results by score (highest first)
+        # Step 4: Sort results by score (highest first)
         results.sort(key=lambda x: x[1], reverse=True)
+
     return results
+
 
 
 def gpt_search(query):
