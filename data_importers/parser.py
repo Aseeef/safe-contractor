@@ -42,6 +42,10 @@ def parse_date(date_str):
     """Attempt to parse a date string using multiple common formats and normalize it."""
 
     date_str = normalize_text(date_str)
+
+    if date_str == "" or date_str == None:
+        return None
+
     try:
         parsed_date = parse(date_str)
     except ValueError:

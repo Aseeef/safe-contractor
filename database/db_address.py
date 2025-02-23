@@ -19,6 +19,8 @@ class Address(Base):
     id = Column(Integer, primary_key=True)
     street_number = Column(String(255))
     street_name = Column(String(1024))
+    #unit_number = Column(String(255)) not worth added complexity especially because permits db doesnt care about this
+    unit_number = None
     city = Column(String(1024), nullable=False)
     state = Column(String(64), nullable=False)
     zipcode = Column(String(64))
@@ -26,24 +28,33 @@ class Address(Base):
     latitude = Column(Double)
     occupancy_type = Column(String(255))
     address_owner = Column(String(1024))
+    house_value = Column(Double)
 
-    # Relationships
+    # Relationshipsf
     contractors = relationship("Contractor", back_populates="address")
     permits = relationship("ApprovedPermit", back_populates="project_address")
 
+    # Updated Unique Constraint to include unit_number
     __table_args__ = (
         UniqueConstraint(
-            'street_number', 'street_name', 'city', 'state', 'zipcode',
+            'street_number', 'street_name', 'city', 'state', 'zipcode', # 'unit_number',
             name='unique_address'
         ),
     )
 
+    @property
+    def full_address(self):
+        if self.unit_number:
+            return f"{self.street_number} {self.street_name}, {self.unit_number}, {self.city}, {self.state} {self.zipcode}"
+        else:
+            return f"{self.street_number} {self.street_name}, {self.city}, {self.state} {self.zipcode}"
 
 class Contractor(Base):
     __tablename__ = 'contractors'
 
     id = Column(Integer, primary_key=True)
     license_id = Column(String(255), unique=True)
+    company = Column(String(1024))
     name = Column(String(1024), nullable=False)
     address_id = Column(Integer, ForeignKey('addresses.id'))
 
@@ -119,8 +130,35 @@ def get_or_create_address(session, street_number, street_name, city, state, zipc
     )
     session.add(new_address)
     session.flush()  # Assigns an ID without committing yet
+
     return new_address.id, True  # True -> Newly created
 
+def add_or_update_contractor(session, license_id, name, address_id, company=None):
+    if license_id is None or name is None:
+        return None
+
+    # Step 1: Check if the contractor already exists
+    existing_contractor = session.query(Contractor).filter_by(license_id=license_id).first()
+
+    if existing_contractor:
+        # If the contractor exists, update the name and address ID
+        existing_contractor.name = name
+        existing_contractor.address_id = address_id
+        existing_contractor.company = company
+        session.commit()
+        return existing_contractor.id, False  # False -> Not newly created
+
+    # Step 2: Create and flush a new contractor
+    new_contractor = Contractor(
+        license_id=license_id,
+        name=name,
+        address_id=address_id,
+        company=company
+    )
+    session.add(new_contractor)
+    session.flush()  # Assigns an ID without committing yet
+
+    return new_contractor.id, True  # True -> Newly created
 
 def initialize_or_get_state() -> State:
     """Ensure a single State record exists and return it."""
