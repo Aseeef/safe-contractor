@@ -1,0 +1,107 @@
+/* HomePage.css */
+
+.home-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensure the footer sticks to the bottom */
+  font-family: 'Arial, sans-serif';
+  color: #333;
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #008000; /* Green color */
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #008000; /* Green color on hover */
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1; /* Take up remaining space */
+  padding: 50px;
+  text-align: center;
+}
+
+.tagline {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 30px;
+  color: #222;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: rgba(173, 216, 230, 0.5); /* Light blue with transparency */
+  border-radius: 30px;
+  padding: 5px;
+  overflow: hidden;
+}
+
+.search-input {
+  padding: 12px 20px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  flex: 1;
+  color: #333;
+}
+
+.search-button {
+  background-color: #fff;
+  border: none;
+  outline: none;
+  padding: 12px 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.search-button:hover {
+  background-color: #eee;
+}
+
+.home-footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #f8f8f8;
+  border-top: 1px solid #eee;
+}
+
+.footer-links {
+  margin-top: 10px;
+}
+
+.footer-link {
+  margin: 0 10px;
+  text-decoration: none;
+  color: #777;
+}
