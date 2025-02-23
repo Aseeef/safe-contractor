@@ -57,3 +57,4 @@ pymysql~=1.1.1
 apscheduler~=3.11.0
 rapidfuzz~=3.12.1
 openai~=1.64.0
+python-dateutil~=2.9.0
