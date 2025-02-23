@@ -3,13 +3,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database import Contractor, Address, ApprovedPermit, Base
-import requests
-from bs4 import BeautifulSoup
 
 app = FastAPI()
 
-# Create the database engine - this will create a new SQLite database file
-engine = create_engine('sqlite:///database.db', echo=True)  # echo=True shows SQL commands
+# Create the database engine
+engine = create_engine('sqlite:///database.db', echo=True)
 
 # Create all tables based on our models
 Base.metadata.create_all(engine)
@@ -25,19 +23,23 @@ async def root():
     return 200
 
 @app.get("/search-contractor")
-async def search_contractor(contractor_name: str = None, radius: int = None, license_id: str = None):
-    scraped_data = scrape_contractor_data(contractor_name, radius, license_id)
-    
+async def search_contractor(contractor_name: str = None, license_id: str = None):
+    """
+    Search for a contractor and their associated data using either name or license ID.
+    Returns contractor details, previous works, and address information.
+    """
     with get_session() as session:
-        contractor = session.query(Contractor).filter_by(license_id=scraped_data["license_id"]).first()
+        # Build the query based on provided parameters
+        query = session.query(Contractor)
+        if license_id:
+            contractor = query.filter_by(license_id=license_id).first()
+        elif contractor_name:
+            contractor = query.filter_by(name=contractor_name).first()
+        else:
+            raise HTTPException(status_code=400, detail="Either contractor_name or license_id must be provided")
+
         if not contractor:
-            contractor = Contractor(
-                license_id=scraped_data["license_id"],
-                name=scraped_data["name"],
-                address_id=scraped_data["address_id"]
-            )
-            session.add(contractor)
-            session.commit()
+            raise HTTPException(status_code=404, detail="Contractor not found")
 
         # Retrieve previous works from ApprovedPermit table
         previous_works = session.query(ApprovedPermit).filter_by(contractor_name=contractor.name).all()
@@ -77,7 +79,6 @@ async def search_contractor(contractor_name: str = None, radius: int = None, lic
     
     return response
 
-# if __name__ == '__main__':
-#     import uvicorn
-#     uvicorn.run(app, host="0.0.0.0", port=8000)
-
+if __name__ == '__main__':
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
