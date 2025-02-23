@@ -2,7 +2,10 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database import Contractor, Address, ApprovedPermit, Base
+from dotenv import load_dotenv
+import database
+import os
+from database import Contractor, Address, ApprovedPermit
 import requests
 from bs4 import BeautifulSoup
 
@@ -27,7 +30,7 @@ app = FastAPI()
 engine = create_engine(DATABASE_URL, echo=True)
 
 # Create all tables based on our models
-Base.metadata.create_all(engine)
+database.init(engine)
 
 # Create a session factory
 SessionLocal = sessionmaker(bind=engine)

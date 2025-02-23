@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Double, UniqueConstraint
+import datetime
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Double, DateTime, UniqueConstraint, Engine
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
@@ -15,15 +17,15 @@ class Address(Base):
     __tablename__ = 'addresses'
 
     id = Column(Integer, primary_key=True)
-    street_number = Column(String)
-    street_name = Column(String)
-    city = Column(String, nullable=False)
-    state = Column(String, nullable=False)
-    zipcode = Column(String)
+    street_number = Column(String(255))
+    street_name = Column(String(1024))
+    city = Column(String(1024), nullable=False)
+    state = Column(String(64), nullable=False)
+    zipcode = Column(String(64))
     longitude = Column(Double)
     latitude = Column(Double)
-    occupancy_type = Column(String)
-    address_owner = Column(String)
+    occupancy_type = Column(String(255))
+    address_owner = Column(String(1024))
 
     # Relationships
     contractors = relationship("Contractor", back_populates="address")
@@ -41,8 +43,8 @@ class Contractor(Base):
     __tablename__ = 'contractors'
 
     id = Column(Integer, primary_key=True)
-    license_id = Column(String, unique=True)
-    name = Column(String, nullable=False)
+    license_id = Column(String(255), unique=True)
+    name = Column(String(1024), nullable=False)
     address_id = Column(Integer, ForeignKey('addresses.id'))
 
     # Relationship
@@ -53,36 +55,60 @@ class ApprovedPermit(Base):
     __tablename__ = 'approved_permits'
 
     project_id = Column(Integer, primary_key=True)
-    date_started = Column(String)
-    permit_id = Column(String, unique=True)
+    date_started = Column(String(1024))
+    permit_id = Column(String(1024), unique=True)
     project_address_id = Column(Integer, ForeignKey('addresses.id'))
     project_amount = Column(Double)
-    project_status = Column(String)  # Will store 'cancelled', 'ongoing', or 'completed'
-    owner_name = Column(String)
-    contractor_name = Column(String)
-    project_description = Column(String)
-    project_comments = Column(String)
+    project_status = Column(String(1024))  # Will store 'cancelled', 'ongoing', or 'completed'
+    owner_name = Column(String(1024))
+    contractor_name = Column(String(1024))
+    project_description = Column(String(1024))
+    project_comments = Column(String(1024))
 
     # Relationship
     project_address = relationship("Address", back_populates="permits")
 
-# Create the database engine - this will create a new SQLite database file
-engine = create_engine('sqlite:///database.db', echo=True)  # echo=True shows SQL commands
 
+class State(Base):
+    __tablename__ = 'state'
+
+    id = Column(Integer, primary_key=True, default=1)  # Singleton ID always set to 1
+    boston_permits_update_ts = Column(DateTime, default=datetime.datetime.min, nullable=False)
+    boston_property_update_ts = Column(DateTime, default=datetime.datetime.min, nullable=False)
+    mass_contractor_update_ts = Column(DateTime, default=datetime.datetime.min, nullable=False)
+
+    # Enforce a single row constraint
+    __table_args__ = {'sqlite_autoincrement': True}
+
+engine = None
+session_creator = None
 # Create all tables based on our models
-Base.metadata.create_all(engine)
-
-# Create a session factory
-SessionLocal = sessionmaker(bind=engine)
+def init(engine_ref: Engine):
+    global engine
+    global session_creator
+    engine = engine_ref
+    session_creator = sessionmaker(bind=engine)
+    Base.metadata.create_all(engine)
+    initialize_or_get_state()
 
 def get_session():
-    return SessionLocal()
+    return session_creator()
 
-if __name__ == '__main__':
+def initialize_or_get_state() -> State:
+    """Ensure a single State record exists and return it."""
     with get_session() as session:
-        session.add(Contractor(
-            license_id="CTR123456",
-            name="Acme Construction",
-            address_id=None
-        ))
-        session.commit()
+        state = session.query(State).filter_by(id=1).first()  # Ensure only ID 1 exists
+        if not state:
+            # Insert the single row if it doesn't exist
+            state = State(
+                id=1,
+                boston_permits_update_ts=datetime.datetime.min,
+                boston_property_update_ts=datetime.datetime.min,
+                mass_contractor_update_ts=datetime.datetime.min
+            )
+            session.add(state)
+            session.commit()
+            print("Initialized the State table with a single entry.")
+        return state
+
+    return None

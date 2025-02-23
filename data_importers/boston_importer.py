@@ -134,16 +134,39 @@ def import_csv_to_db(csv_file_path, db_session):
                 print(f"Error details: {str(e)}")
                 db_session.rollback()
 
+def update_database_task():
+    """Scheduled task to update the database and record the update timestamp."""
+    print(f"Task started at {datetime.now()}")
 
-def main():
     try:
         with get_session() as session:
-            # Import the CSV data
-            csv_file = download_csv()
-            import_csv_to_db(csv_file, session)
-    except Exception as ex:
-        session.close()
-        print(f"An error occurred: {ex}")
+            # Step 1: Download the CSV
+            csv_file_path = download_csv()
+
+            if csv_file_path:
+                # Step 2: Import data into the database
+                import_csv_to_db(csv_file_path, session)
+
+                # Step 3: Update the state table
+                state = session.query(State).first()  # Assuming there's only one row
+                if not state:
+                    state = State()  # Create a new state row if none exists
+                    session.add(state)
+
+                state.boston_permits_update_ts = datetime.utcnow()
+                session.commit()
+
+                print(f"Task completed successfully at {datetime.now()}")
+
+    except Exception as e:
+        print(f"Error during scheduled task: {e}")
+
+
+def start_scheduled_updates():
+    """Starts the scheduler with a 5-hour interval."""
+    scheduler.add_job(update_database_task, 'interval', hours=5)
+    scheduler.start()
+    print("Scheduler started! Task will run every 5 hours.")
 
 if __name__ == '__main__':
     main()
