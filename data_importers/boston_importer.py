@@ -1,4 +1,4 @@
-from data_importers.parser import normalize_text
+from data_importers.parser import normalize_text, parse_date, parse_float, parse_int
 
 import csv
 import os
@@ -13,7 +13,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 # Import your models
 from database import Address, Contractor, ApprovedPermit, get_session, get_or_create_address
-from .parser import parse_date, parse_float, parse_int
 
 
 
@@ -119,7 +118,7 @@ def import_csv_to_db(csv_file_path, db_session):
                         owner_name=None,  # No owner name in CSV
                         contractor_name=contractor_name,
                         project_description=project_description,
-                        project_comments=row['comments']
+                        project_comments=row['comments'][:1000] # trim to 1000
                     )
 
                     db_session.add(permit)
@@ -152,7 +151,7 @@ def import_csv_to_db(csv_file_path, db_session):
                 print(f"Error details: {str(e)}")
                 db_session.rollback()
 
-def update_database_task():
+def update_permits_table_task():
     """Scheduled task to update the database and record the update timestamp."""
     print(f"Boston Permit Import Task started at {datetime.now()}")
 

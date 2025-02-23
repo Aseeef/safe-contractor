@@ -11,7 +11,7 @@ import database
 import os
 import requests
 from bs4 import BeautifulSoup
-from data_importers import update_database_task
+from data_importers import update_permits_table_task, update_contractor_table_task
 
 def get_bool_env_var(key, default=False):
     return os.environ.get(key, str(default)).lower() in ('true', '1', 'yes')
@@ -53,7 +53,8 @@ scheduler = AsyncIOScheduler()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup actions
-    scheduler.add_job(update_database_task, trigger="interval", hours=5, next_run_time=datetime.now())
+    scheduler.add_job(update_contractor_table_task, trigger="interval", hours=5, next_run_time=datetime.now())
+    scheduler.add_job(update_permits_table_task, trigger="interval", hours=5, next_run_time=datetime.now())
     scheduler.start()
     print("Scheduler started with FastAPI lifespan event.")
 
